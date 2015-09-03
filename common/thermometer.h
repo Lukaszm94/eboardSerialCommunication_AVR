@@ -13,27 +13,37 @@
 class Thermometer
 {
 public:
-	Thermometer(float conversionRatio)
+	Thermometer(float mvToCelsiusCoefficient_ = 0, float offset_ = 0) //offset in mv is subtracted from reading
 	{
-		conversionRatioFromVoltsToCelsius = conversionRatio;
+		mvToCelsiusCoefficient = mvToCelsiusCoefficient_;
 		temperatureC = 20.0;
+		offset = offset_;
+	}
+	
+	void setCoefficient(float mvToCelsiusCoefficient_)
+	{
+		mvToCelsiusCoefficient = mvToCelsiusCoefficient_;
 	}
 	float getTemperature()
 	{
 		return temperatureC;
 	}
-	void insertNewReading(float newReading)
+	void insertNewReading(uint16_t newReadingMv)
 	{
-		temperatureC = convertRawADCToTemp(newReading);
+		temperatureC = convertRawADCToTemp(newReadingMv);
 	}
 private:
-	float convertVoltsToTemperature(float voltage)
+	float convertRawADCToTemp(uint16_t rawMv)
 	{
-		return voltage*conversionRatioFromVoltsToCelsius;
+		float temp = (rawMv - offset)*mvToCelsiusCoefficient;
 	}
 
+	
+	
+
 	float temperatureC;
-	float conversionRatioFromVoltsToCelsius;
+	float offset;
+	float mvToCelsiusCoefficient;
 };
 
 
