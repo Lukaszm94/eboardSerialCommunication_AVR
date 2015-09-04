@@ -8,43 +8,50 @@
 #ifndef THERMOMETER_H_
 #define THERMOMETER_H_
 
-#define LM35_CONVERSION_RATIO 0.01 //V -> C
+/*
+*	This class is written with assumption that all used sensors are the same and are of type with analog output proportional to temperature
+*
+*
+*
+*/
 
-class Thermometer
+#include "sensorInterface.h"
+
+#define LM35_CONVERSION_RATIO 100 //V -> C
+#define LM35_OFFSET 0.0 //V
+
+
+
+class Thermometer : public Sensor
 {
 public:
-	Thermometer(float mvToCelsiusCoefficient_ = 0, float offset_ = 0) //offset in mv is subtracted from reading
+	Thermometer() 
 	{
-		mvToCelsiusCoefficient = mvToCelsiusCoefficient_;
-		temperatureC = 20.0;
-		offset = offset_;
+		measuredValue = 20.0;
 	}
 	
-	void setCoefficient(float mvToCelsiusCoefficient_)
+	static float offset;
+	static float VToCelsiusCoefficient;
+	
+	static void setCoefficient(float VToCelsiusCoefficient_)
 	{
-		mvToCelsiusCoefficient = mvToCelsiusCoefficient_;
+		Thermometer::VToCelsiusCoefficient = VToCelsiusCoefficient_;
 	}
-	float getTemperature()
+	
+	void insertNewReading(float readV)
 	{
-		return temperatureC;
-	}
-	void insertNewReading(uint16_t newReadingMv)
-	{
-		temperatureC = convertRawADCToTemp(newReadingMv);
+		measuredValue = convertRawADCToTemp(readV);
 	}
 private:
-	float convertRawADCToTemp(uint16_t rawMv)
+	float convertRawADCToTemp(float rawV)
 	{
-		float temp = (rawMv - offset)*mvToCelsiusCoefficient;
+		float temp = (rawV - offset)*VToCelsiusCoefficient;
+		return temp;
 	}
 
-	
-	
-
-	float temperatureC;
-	float offset;
-	float mvToCelsiusCoefficient;
 };
 
+float Thermometer::VToCelsiusCoefficient = LM35_CONVERSION_RATIO;
+float Thermometer::offset = LM35_OFFSET;
 
 #endif /* THERMOMETER_H_ */

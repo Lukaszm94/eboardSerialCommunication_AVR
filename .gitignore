@@ -1,0 +1,13 @@
+*.d
+*.o
+*.eep
+*.lst
+test/main.sym
+*.map
+*.sym
+*.hex
+*.elf
+ControlUnit/Makefile
+*.lss
+DriversUnit/Makefile
+test/main.cpp

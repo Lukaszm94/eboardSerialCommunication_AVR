@@ -25,6 +25,12 @@ public:
         integer = intPart;
         fractional = fracPart;
     }
+	
+	sFloat(float initValue)
+	{
+		setInteger((int) initValue);
+		setFractional((int)(initValue * 10) % 10);
+	}
 
     void setInteger(int intPart)
     {

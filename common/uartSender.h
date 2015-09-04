@@ -18,6 +18,7 @@ public:
 
     char* getPacketCharString(Packet pack)
     {
+		buff.clear();
         buff.append('s');
         buff.append("Ia");
         buff.append(pack.Ia);
