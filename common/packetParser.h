@@ -1,6 +1,8 @@
 #ifndef PACKETPARSER_H_INCLUDED
 #define PACKETPARSER_H_INCLUDED
 
+#include <ctype.h>
+
 #include "packet.h"
 #include "myString.h"
 #include "debug.h"
@@ -32,7 +34,7 @@ public:
     {
         if(buff->size() > minPackLength && buff->at(0) != 's') {
             if(!correctInputBuffer(buff)) {
-                cout<<"ERROR: COULD NOT CORRECT BUFFER!!"<<endl;
+                Debug::println("ERROR: COULD NOT CORRECT BUFFER!!");
                 return false;
             }
         }

@@ -30,6 +30,11 @@ public:
     {
         return parser.getPacket();
     }
+	
+	void clear()
+	{
+		buff.clear();
+	}
 
 private:
     char inputBuffer[inputBufferSize];

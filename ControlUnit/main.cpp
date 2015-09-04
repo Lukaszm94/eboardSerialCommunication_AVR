@@ -7,76 +7,111 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <stdio.h>
-#include "Debug_atmega328p.h"
-#include "lcd.h"
 
-#define serial_packet_min_size 4
+#include "uart.h"
+#include "lcd.h"
+#include "controlUnit.h"
+#include "../common/packet.h"
+#include "../common/debug.h"
+#include "../common/sFloat.h"
+#include "../common/myString.h"
+#include "../common/uartReceiver.h"
+#include "../common/timer0.h"
+
 
 char uartGetChar()
 {
-	while(!uart_available()) {
-	_delay_ms(5);
-	}
-	char received = (uart_getc() & 0x00FF);
-	uart_putc(received);
-	return received;
+	char c = uart_getc() & 0x00FF;
+	return c;
 }
 
-int uartGetInt()
+void printReceivedPacket(Packet pack)
 {
-	int number = 0;
-	char uartLetter = uartGetChar();
-	//uart_puts("Int: ");
-	while(uartLetter >= '0' && uartLetter <= '9') {
-		number *=10;
-		number += (uartLetter - '0');
-		uartLetter = uartGetChar();
-		uart_putc(uartLetter);
-	}
-	//uart_puts("Parsing int finished");
-	uart_endl();
-	return number;
+	Debug::println("Received packet:");
+	Debug::print("Ia: ");
+	Debug::print(pack.Ia.toString());
+	Debug::print(", Ib: ");
+	Debug::print(pack.Ib.toString());
+	Debug::print(", Ta: ");
+	Debug::print(pack.Ta.toString());
+	Debug::print(", Tb: ");
+	Debug::print(pack.Tb.toString());
+	Debug::print(", Tc: ");
+	Debug::print(pack.Tc.toString());
+	Debug::print(", Td: ");
+	Debug::print(pack.Td.toString());
+	Debug::print(", Te: ");
+	Debug::print(pack.Te.toString());
+	Debug::print(", Tf: ");
+	Debug::println(pack.Tf.toString());
 }
 
-void readSerialPacket(int *firstVar, int *secondVar) {
-	while(uartGetChar() != 's') {
-		_delay_ms(5);
-	}
-	*firstVar = uartGetInt();
-	*secondVar = uartGetInt();
-}
 
-void printCurrents(int i1, int i2)
+void displayPacket(Packet pack)
 {
 	LCD_clear();
-	LCD_str("I1: ");
-	LCD_int(i1);
-	LCD_goto(0,1); //goto second line
-	LCD_str("I2: ");
-	LCD_int(i2);
+	LCD_goto(0,0);
+	LCD_str("Ia");
+	LCD_int(pack.Ia.getInteger());
+	LCD_str("Ib");
+	LCD_int(pack.Ib.getInteger());
+	LCD_str("Ta");
+	LCD_int(pack.Ta.getInteger());
+	LCD_str("Tb");
+	LCD_int(pack.Tb.getInteger());
+	LCD_goto(0,1); //second line
+	LCD_str("Tc");
+	LCD_int(pack.Tc.getInteger());
+	LCD_str("Td");
+	LCD_int(pack.Td.getInteger());
+	LCD_str("Te");
+	LCD_int(pack.Te.getInteger());
+	LCD_str("Tf");
+	LCD_int(pack.Tf.getInteger());
 }
+
+Timer0 timer;
+volatile bool interruptFlag = false;
 
 int main()
 {
-	int current1 = 2;
-	int current2 = 0;
-	DDRD |= (1<<1);
+	DDRD |= (1<<PD1);
 	sei();
-	lcd_init();
 	Debug::init();
+	
+	uartReceiver rx;
+	Packet receivedPacket;
+	ControlUnit CU;
+	
+	CU.init();
+	timer.init();
 	
 	while(1)
 	{
-		if(uart_available() >= serial_packet_min_size)
-		{
-			readSerialPacket(&current1, &current2);
-			printCurrents(current1, current2);
-		
+		if(interruptFlag) {
+			interruptFlag = false;
+			CU.update();
 		}
-		_delay_ms(10);
+		if(uart_available())
+		{
+			rx.receiveNewChar(uartGetChar());
+			while(uart_available()) {
+				rx.receiveNewChar(uartGetChar());
+			}
+			if(rx.parseBuffer()) {
+				receivedPacket = rx.getPacket();
+				rx.clear();
+				printReceivedPacket(receivedPacket);
+				CU.onNewPacketReceived(&receivedPacket);
+			}
+		}
 	}
 
 }
 
+
+ISR(TIMER0_COMPA_vect)
+{
+	interruptFlag = true;
+}
 

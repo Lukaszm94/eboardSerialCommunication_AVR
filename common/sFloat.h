@@ -60,6 +60,12 @@ public:
     {
         return fractional;
     }
+	
+	float toFloat()
+	{
+		float result = integer + (float)fractional/10;
+		return result;
+	}
 
     char* toString()
     {

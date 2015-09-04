@@ -77,7 +77,7 @@ int main(void)
 		pack = preparePacket();
 		uart_puts(sender.getPacketCharString(pack));
 		uart_endl();
-		_delay_ms(1000);
+		_delay_ms(200);
 	}
 	return 0;
 }

@@ -11,3 +11,4 @@ ControlUnit/Makefile
 *.lss
 DriversUnit/Makefile
 test/main.cpp
+test/Makefile
