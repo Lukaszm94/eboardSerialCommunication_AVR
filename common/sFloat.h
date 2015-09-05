@@ -29,7 +29,7 @@ public:
 	sFloat(float initValue)
 	{
 		setInteger((int) initValue);
-		setFractional((int)(initValue * 10) % 10);
+		setFractional((int)(initValue * 10 + 0.5) % 10); // 0.5 is added to avoid floor rounding error
 	}
 
     void setInteger(int intPart)

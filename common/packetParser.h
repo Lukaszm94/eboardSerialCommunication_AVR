@@ -23,8 +23,8 @@ public:
         if(startCharPosition < 0) {
             return false;
         }
-        Debug::print("Trying to correct input buffer, shift left by: ");
-        Debug::println(startCharPosition);
+        //Debug::print("Trying to correct input buffer, shift left by: ");
+        //Debug::println(startCharPosition);
 
         buff->shiftLeft(startCharPosition);
         return true;
@@ -79,8 +79,8 @@ private:
 
         shiftToDigit();
         char checksum = extractInt() + '0';
-        Debug::print("Checksum received: ");
-        Debug::println(checksum);
+        //Debug::print("Checksum received: ");
+        //Debug::println(checksum);
         if(checksum != parsedPacket.generateChecksumDigit()) {
             Debug::println("Checksum incorrect!");
             return false;

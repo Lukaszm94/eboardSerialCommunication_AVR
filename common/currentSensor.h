@@ -20,11 +20,9 @@ public:
 private:
 	float convertRawADCToTemp(float rawV)
 	{
-		if(rawV < offset) {
-			rawV = offset;
-		}
+		
 		float temp = (rawV - offset)*VToACoefficient;
-		return temp;
+		return fabs(temp); //fabs is used to avoid negative values, since transmission protocol doesn't support negative numbers
 	}
 
 };

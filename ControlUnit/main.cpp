@@ -18,6 +18,7 @@
 #include "../common/uartReceiver.h"
 #include "../common/timer0.h"
 
+#define testLedPin 2
 
 char uartGetChar()
 {
@@ -70,6 +71,8 @@ void displayPacket(Packet pack)
 	LCD_int(pack.Tf.getInteger());
 }
 
+extern "C" void __cxa_pure_virtual(void){};
+
 Timer0 timer;
 volatile bool interruptFlag = false;
 
@@ -85,6 +88,8 @@ int main()
 	
 	CU.init();
 	timer.init();
+	timer.start();
+	DDRC |= (1<<testLedPin);
 	
 	while(1)
 	{
@@ -101,7 +106,7 @@ int main()
 			if(rx.parseBuffer()) {
 				receivedPacket = rx.getPacket();
 				rx.clear();
-				printReceivedPacket(receivedPacket);
+				//printReceivedPacket(receivedPacket);
 				CU.onNewPacketReceived(&receivedPacket);
 			}
 		}
@@ -112,6 +117,7 @@ int main()
 
 ISR(TIMER0_COMPA_vect)
 {
+	PORTC ^= (1<<testLedPin);
 	interruptFlag = true;
 }
 

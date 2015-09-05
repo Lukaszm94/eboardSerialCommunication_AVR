@@ -9,7 +9,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <math.h>
-#include "adconverter.h"
+#include "../common/adconverter.h"
 #include "uart.h"
 #include "../common/uartSender.h"
 #include "../common/myString.h"
@@ -45,7 +45,7 @@ void initializeSensors()
 Packet preparePacket()
 {
 	Packet pack;
-
+	//not a really good solution, relies on the fact that thermometers are connected to ADC inputs in correct order
 	pack.Ta = sFloat(sensorsManager.getSingleReading(0));
 	pack.Tb = sFloat(sensorsManager.getSingleReading(1));
 	pack.Tc = sFloat(sensorsManager.getSingleReading(2));
