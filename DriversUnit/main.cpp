@@ -19,8 +19,27 @@
 #include "../common/currentSensor.h"
 #include "../common/sensorsManager.h"
 
+#define __DDR(pad) DDR ## pad
+#define DDR(pad) __DDR(pad)
+//#define DDR(name) _DDR(PAD_##name)
+
+#define __PORT(pad) PORT ## pad
+#define PORT(pad) __PORT(pad)
+//#define PORT(name) _PORT(PAD_##name)
+
+#define __PIN(pad) PIN ## pad
+#define _PIN(pad) __PIN(pad)
+#define PIN(name) _PIN(PAD_##name)
+
+#define PAD(pad, name) _##pad(PAD_##name)
+
 
 #define LED_PIN 5
+
+#define BACK_LIGHT_Q_PIN 2
+#define BACK_LIGHT_PORT B
+
+
 
 
 
@@ -29,6 +48,16 @@ extern "C" void __cxa_pure_virtual(void);
 SensorManager sensorsManager;
 CurrentSensor currentSensors[CURRENT_SENSORS_COUNT];
 Thermometer thermometers[THERMOMETERS_COUNT];
+
+void initLights()
+{
+	DDR(BACK_LIGHT_PORT) |= (1<<BACK_LIGHT_Q_PIN);
+}
+
+void toggleLights()
+{
+	PORT(BACK_LIGHT_PORT) ^= (1<<BACK_LIGHT_Q_PIN);
+}
 
 void initializeSensors()
 {
@@ -65,6 +94,7 @@ int main(void)
 	uart_init(UART_BAUD_SELECT(9600, F_CPU));
 	ADConverter::init();
 	initializeSensors();
+	initLights();
 	uartSender sender;
 	Packet pack;
 	
@@ -77,6 +107,7 @@ int main(void)
 		pack = preparePacket();
 		uart_puts(sender.getPacketCharString(pack));
 		uart_endl();
+		toggleLights();
 		_delay_ms(200);
 	}
 	return 0;

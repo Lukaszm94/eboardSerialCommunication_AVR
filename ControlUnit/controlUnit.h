@@ -17,6 +17,10 @@
 #define THERMOMETER_MOSFET_ADC_CHANNEL 0
 #define THERMOMETER_SAMPLES_COUNT 5
 
+#define BATTERY_VOLTAGE_ADC_CHANNEL 1
+#define BATTERY_VOLTAGE_COEFFICIENT ((10 + 120) / 10) // R1=120k, R2=10k
+#define BATTERY_VOLTAGE_SAMPLES_COUNT 5
+
 class ControlUnit
 {
 public:
@@ -112,7 +116,9 @@ private:
 		LCD_goto(0,1);
 		LCD_str("T ");
 		if(temperaturesOk) {
-			LCD_str("ok");
+			LCD_str("ok "); 
+			//enough space on LCD to print battery voltage
+			lcdPrintFloat(getBatteryVoltage());
 		} else {
 			LCD_str("not OK");
 		}
@@ -155,6 +161,21 @@ private:
 		Debug::println((int)mosfetThermometer.getMeasuredValue());
 		
 		return (int)mosfetThermometer.getMeasuredValue();
+	}
+	
+	float getBatteryVoltage()
+	{
+		float batVADC = ADConverter::getAverageVoltage(BATTERY_VOLTAGE_ADC_CHANNEL , BATTERY_VOLTAGE_SAMPLES_COUNT);
+		return (batVADC*BATTERY_VOLTAGE_COEFFICIENT);
+		
+	}
+	
+	void lcdPrintFloat(float number)
+	{
+		LCD_int((int)number);
+		LCD_char('.');
+		int frac = (int)(number*10) % 10;
+		LCD_int(frac);
 	}
 	
 	float batteryLoad; //in mAh
