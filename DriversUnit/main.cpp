@@ -39,6 +39,11 @@
 #define BACK_LIGHT_Q_PIN 2
 #define BACK_LIGHT_PORT B
 
+#define START_SENDING_COMMAND ('b')
+#define STOP_SENDING_COMMAND ('s')
+
+#define SERIAL_PACKET_INTERVAL_MS 500
+
 
 
 
@@ -48,6 +53,9 @@ extern "C" void __cxa_pure_virtual(void);
 SensorManager sensorsManager;
 CurrentSensor currentSensors[CURRENT_SENSORS_COUNT];
 Thermometer thermometers[THERMOMETERS_COUNT];
+uint8_t duState;
+
+enum DriversUnitState {PAUSED, SENDING};
 
 void initLights()
 {
@@ -87,6 +95,24 @@ Packet preparePacket()
 	return pack;
 }
 
+char getUartChar()
+{
+	char c = uart_getc() & 0x00FF;
+	return c;
+}
+
+void checkCUCommands()
+{
+	if(uart_available()) {
+		char command = getUartChar();
+		if(command == START_SENDING_COMMAND) {
+			duState = SENDING;
+		} else if(command == STOP_SENDING_COMMAND) {
+			duState = PAUSED;
+		}
+	}
+}
+
 int main(void)
 {
 	sei();
@@ -97,18 +123,25 @@ int main(void)
 	initLights();
 	uartSender sender;
 	Packet pack;
-	
+	duState = PAUSED;
 	
 	
 	DDRB |= (1<<LED_PIN);
 	while(1)
 	{
-		sensorsManager.readAll();
-		pack = preparePacket();
-		uart_puts(sender.getPacketCharString(pack));
-		uart_endl();
+		if(duState == PAUSED) {
+		
+		} else if(duState == SENDING) {
+			PORTB |= (1<<LED_PIN);
+			sensorsManager.readAll();
+			pack = preparePacket();
+			uart_puts(sender.getPacketCharString(pack));
+			uart_endl();
+			PORTB &=~(1<<LED_PIN);
+		}
 		toggleLights();
-		_delay_ms(200);
+		_delay_ms(SERIAL_PACKET_INTERVAL_MS);
+		checkCUCommands();
 	}
 	return 0;
 }
