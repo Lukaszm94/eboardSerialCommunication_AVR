@@ -136,7 +136,6 @@ int main(void)
 			sensorsManager.readAll();
 			pack = preparePacket();
 			uart_puts(sender.getPacketCharString(pack));
-			uart_endl();
 			PORTB &=~(1<<LED_PIN);
 		}
 		toggleLights();
